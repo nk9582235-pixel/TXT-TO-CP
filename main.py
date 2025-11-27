@@ -1472,10 +1472,23 @@ async def txt_handler(bot: Client, m: Message):
                     filename = res_file
                     await prog1.delete(True)
                     await prog.delete(True)
+                    
+                    # Check if file actually exists before trying to send
+                    if not os.path.isfile(filename):
+                        await m.reply_text(f"**Download failed for:** `{name1}`\n**File not found:** `{filename}`\n**URL:** {url}")
+                        count += 1
+                        failed_count += 1
+                        continue
+                    
                     try:
                         await helper.send_vid(bot, m, cc, filename, thumb, name, prog, channel_id)
                     except Exception as send_error:
                         await m.reply_text(f"**Failed to send video to channel. Error: {str(send_error)}**")
+                        # Clean up the file if send fails
+                        if os.path.isfile(filename):
+                            os.remove(filename)
+                        count += 1
+                        failed_count += 1
                         continue
                     count += 1
                     time.sleep(1)
