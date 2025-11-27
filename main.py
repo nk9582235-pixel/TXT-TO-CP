@@ -1771,19 +1771,23 @@ if __name__ == "__main__":
         """Health check endpoint for Render.com"""
         return web.Response(text="Bot is running!")
     
-    async def start_services():
-        """Start web server and bot"""
+    async def start_web_server():
+        """Start web server for health checks"""
+        app = web.Application()
+        app.router.add_get('/', health_check)
+        
+        runner = web.AppRunner(app)
+        await runner.setup()
+        port = int(os.getenv('PORT', 10000))
+        site = web.TCPSite(runner, '0.0.0.0', port)
+        await site.start()
+        print(f"✅ Web server started on port {port}")
+    
+    async def main():
+        """Main startup function"""
         try:
-            # Start web server FIRST for Render health check
-            app = web.Application()
-            app.router.add_get('/', health_check)
-            
-            runner = web.AppRunner(app)
-            await runner.setup()
-            port = int(os.getenv('PORT', 10000))
-            site = web.TCPSite(runner, '0.0.0.0', port)
-            await site.start()
-            print(f"✅ Web server started on port {port}")
+            # Start web server
+            await start_web_server()
             
             # Start the Telegram bot
             print("🚀 Starting Telegram bot...")
@@ -1812,17 +1816,9 @@ if __name__ == "__main__":
             await idle()
             
         except Exception as e:
-            print(f"❌ Error in start_services: {e}")
+            print(f"❌ Error in main: {e}")
             import traceback
             traceback.print_exc()
-            raise
     
-    try:
-        # Run the async services
-        asyncio.run(start_services())
-    except KeyboardInterrupt:
-        print("\n👋 Bot stopped by user")
-    except Exception as e:
-        print(f"❌ Fatal error: {e}")
-        import traceback
-        traceback.print_exc()
+    # Run the bot
+    bot.run(main())
