@@ -222,7 +222,7 @@ async def cookies_handler(client: Client, m: Message):
 
     try:
         # Wait for the user to send the cookies file
-        input_message = await client.listen(filters=filters.chat(m.chat.id))
+        input_message = await client.listen(chat_id=m.chat.id, filters=filters.chat(m.chat.id))
         
         # Check if input_message is not None
         if input_message is None:
@@ -257,7 +257,7 @@ async def text_to_txt(client, message: Message):
     user_id = str(message.from_user.id)
     # Inform the user to send the text data and its desired file name
     editable = await message.reply_text(f"<blockquote>Welcome to the Text to .txt Converter!\nSend the **text** for convert into a `.txt` file.</blockquote>")
-    input_message = await bot.listen(filters=filters.chat(message.chat.id))
+    input_message = await bot.listen(chat_id=message.chat.id, filters=filters.chat(message.chat.id))
     if not input_message or not hasattr(input_message, 'text') or not input_message.text:
         await message.reply_text("**Send valid text data**")
         return
@@ -266,7 +266,7 @@ async def text_to_txt(client, message: Message):
     await input_message.delete()  # Corrected here
     
     await editable.edit("**🔄 Send file name or send /d for filename**")
-    inputn = await bot.listen(filters=filters.chat(message.chat.id))
+    inputn = await bot.listen(chat_id=message.chat.id, filters=filters.chat(message.chat.id))
     if not inputn or not hasattr(inputn, 'text'):
         await message.reply_text("**Send valid file name**")
         return
@@ -299,7 +299,7 @@ async def youtube_to_txt(client, message: Message):
         f"Send YouTube Website/Playlist link for convert in .txt file"
     )
 
-    input_message = await bot.listen(filters=filters.chat(message.chat.id))
+    input_message = await bot.listen(chat_id=message.chat.id, filters=filters.chat(message.chat.id))
     if not input_message or not hasattr(input_message, 'text'):
         await message.reply_text("**Send valid YouTube link**")
         return
@@ -901,7 +901,7 @@ async def txt_handler(bot: Client, m: Message):
     editable = await m.reply_text(f"**__Hii, I am non-drm Downloader Bot__\n<blockquote><i>Send Me Your text file which enclude Name with url...\nE.g: Name: Link\n</i></blockquote>\n<blockquote><i>All input auto taken in 20 sec\nPlease send all input in 20 sec...\n</i></blockquote>**")
     print(f"Waiting for input from {m.chat.id}...")
     try:
-        input = await bot.listen(filters=filters.chat(editable.chat.id), timeout=60)
+        input = await bot.listen(chat_id=m.chat.id, filters=filters.chat(m.chat.id), timeout=60)
         print(f"Received input: {input}")
     except Exception as e:
         print(f"Error in listen: {e}")
