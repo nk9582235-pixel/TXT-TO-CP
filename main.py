@@ -1767,6 +1767,8 @@ async def reset_and_set_commands():
 
 
 if __name__ == "__main__":
+    loop = asyncio.get_event_loop()
+    
     async def health_check(request):
         """Health check endpoint for Render.com"""
         return web.Response(text="Bot is running!")
@@ -1783,10 +1785,10 @@ if __name__ == "__main__":
         await site.start()
         print(f"✅ Web server started on port {port}")
     
-    async def main():
-        """Main startup function"""
-        # Start web server for health checks
-        await start_web_server()
+    async def setup_bot():
+        """Setup function called when bot starts"""
+        # Start web server in background
+        asyncio.create_task(start_web_server())
         
         # Set bot commands and notify owner
         try:
@@ -1805,9 +1807,11 @@ if __name__ == "__main__":
         
         print("🎉 All services started successfully!")
         print("🔄 Bot is now running and waiting for messages...")
-        
-        # Keep running using Pyrogram's idle
-        await idle()
     
-    # Run the bot
-    bot.run(main())
+    # Register startup handler
+    @bot.on_start()
+    async def on_bot_start(client, message=None):
+        await setup_bot()
+    
+    # Run the bot normally (pyromod needs this)
+    bot.run()
