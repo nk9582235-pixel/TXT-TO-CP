@@ -1785,40 +1785,29 @@ if __name__ == "__main__":
     
     async def main():
         """Main startup function"""
+        # Start web server for health checks
+        await start_web_server()
+        
+        # Set bot commands and notify owner
         try:
-            # Start web server
-            await start_web_server()
-            
-            # Start the Telegram bot
-            print("🚀 Starting Telegram bot...")
-            await bot.start()
-            print("✅ Bot started successfully!")
-            
-            # Set bot commands and notify owner (after bot is running)
-            try:
-                print("📝 Setting bot commands...")
-                await reset_and_set_commands()
-                print("✅ Commands set successfully")
-            except Exception as e:
-                print(f"⚠️ Warning: Could not set commands: {e}")
-            
-            try:
-                print("📢 Notifying owner...")
-                await notify_owner()
-                print("✅ Owner notified")
-            except Exception as e:
-                print(f"⚠️ Warning: Could not notify owner: {e}")
-            
-            print("🎉 All services started successfully!")
-            print("🔄 Bot is now running and waiting for messages...")
-            
-            # Keep running using Pyrogram's idle
-            await idle()
-            
+            print("📝 Setting bot commands...")
+            await reset_and_set_commands()
+            print("✅ Commands set successfully")
         except Exception as e:
-            print(f"❌ Error in main: {e}")
-            import traceback
-            traceback.print_exc()
+            print(f"⚠️ Warning: Could not set commands: {e}")
+        
+        try:
+            print("📢 Notifying owner...")
+            await notify_owner()
+            print("✅ Owner notified")
+        except Exception as e:
+            print(f"⚠️ Warning: Could not notify owner: {e}")
+        
+        print("🎉 All services started successfully!")
+        print("🔄 Bot is now running and waiting for messages...")
+        
+        # Keep running using Pyrogram's idle
+        await idle()
     
     # Run the bot
     bot.run(main())
