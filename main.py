@@ -1258,24 +1258,38 @@ async def txt_handler(bot: Client, m: Message):
                    # Mimic a browser request from the web app
                    ua = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
                    
-                   # DEBUG: Check URL with requests first to see WHY it is 403
+                   # DEBUG: Test header combinations to find what works
                    try:
-                       debug_headers = {
-                           "User-Agent": ua,
-                           "Referer": "https://web.classplusapp.com/",
-                           "Origin": "https://web.classplusapp.com",
-                           "x-cdn-tag": "empty"
-                       }
-                       print(f"[DEBUG] Checking URL: {url}")
-                       debug_req = requests.get(url, headers=debug_headers, stream=True)
-                       print(f"[DEBUG] Status: {debug_req.status_code}")
-                       if debug_req.status_code != 200:
-                           print(f"[DEBUG] Response Headers: {debug_req.headers}")
-                           print(f"[DEBUG] Response Body: {debug_req.text[:500]}")
+                       combinations = [
+                           {"name": "UA Only", "headers": {"User-Agent": ua}},
+                           {"name": "UA+Ref", "headers": {"User-Agent": ua, "Referer": "https://web.classplusapp.com/", "Origin": "https://web.classplusapp.com"}},
+                           {"name": "Full", "headers": {"User-Agent": ua, "Referer": "https://web.classplusapp.com/", "Origin": "https://web.classplusapp.com", "x-cdn-tag": "empty"}}
+                       ]
+                       
+                       for combo in combinations:
+                           print(f"[DEBUG] Testing {combo['name']}...")
+                           try:
+                               r = requests.get(url, headers=combo['headers'], stream=True, timeout=5)
+                               print(f"[DEBUG] {combo['name']} Status: {r.status_code}")
+                               if r.status_code == 200:
+                                   print(f"[DEBUG] SUCCESS with {combo['name']}!")
+                                   # If this combo works, use it for the command!
+                                   if combo['name'] == "UA Only":
+                                       cmd = f'yt-dlp --user-agent "{ua}" -f "{ytf}" "{url}" -o "{name}.mp4"'
+                                   elif combo['name'] == "UA+Ref":
+                                       cmd = f'yt-dlp --user-agent "{ua}" --referer "https://web.classplusapp.com/" --add-header "origin:https://web.classplusapp.com" -f "{ytf}" "{url}" -o "{name}.mp4"'
+                                   break # Stop testing if we found a working one
+                               else:
+                                   print(f"[DEBUG] {combo['name']} Body: {r.text[:200]}")
+                           except Exception as e:
+                               print(f"[DEBUG] {combo['name']} Error: {e}")
+                               
                    except Exception as e:
-                       print(f"[DEBUG] Request check failed: {e}")
+                       print(f"[DEBUG] Header test failed: {e}")
 
-                   cmd = f'yt-dlp --user-agent "{ua}" --referer "https://web.classplusapp.com/" --add-header "origin:https://web.classplusapp.com" --add-header "x-cdn-tag:empty" -f "{ytf}" "{url}" -o "{name}.mp4"'
+                   # Default to full headers if check fails or none work (fallback)
+                   if "cmd" not in locals() or "yt-dlp" not in cmd:
+                       cmd = f'yt-dlp --user-agent "{ua}" --referer "https://web.classplusapp.com/" --add-header "origin:https://web.classplusapp.com" --add-header "x-cdn-tag:empty" -f "{ytf}" "{url}" -o "{name}.mp4"'
                 elif "youtube.com" in url or "youtu.be" in url:
                     cmd = f'yt-dlp --cookies youtube_cookies.txt -f "{ytf}" "{url}" -o "{name}".mp4'
                 else:
