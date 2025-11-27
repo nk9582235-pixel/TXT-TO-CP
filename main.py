@@ -1767,51 +1767,38 @@ async def reset_and_set_commands():
 
 
 if __name__ == "__main__":
-    loop = asyncio.get_event_loop()
+    import threading
     
-    async def health_check(request):
-        """Health check endpoint for Render.com"""
-        return web.Response(text="Bot is running!")
-    
-    async def start_web_server():
-        """Start web server for health checks"""
-        app = web.Application()
-        app.router.add_get('/', health_check)
+    def start_web_server_sync():
+        """Start web server in separate thread"""
+        async def health_check(request):
+            return web.Response(text="Bot is running!")
         
-        runner = web.AppRunner(app)
-        await runner.setup()
-        port = int(os.getenv('PORT', 10000))
-        site = web.TCPSite(runner, '0.0.0.0', port)
-        await site.start()
-        print(f"✅ Web server started on port {port}")
-    
-    async def setup_bot():
-        """Setup function called when bot starts"""
-        # Start web server in background
-        asyncio.create_task(start_web_server())
+        async def run_server():
+            app = web.Application()
+            app.router.add_get('/', health_check)
+            
+            runner = web.AppRunner(app)
+            await runner.setup()
+            port = int(os.getenv('PORT', 10000))
+            site = web.TCPSite(runner, '0.0.0.0', port)
+            await site.start()
+            print(f"✅ Web server started on port {port}")
+            
+            # Keep server running
+            await asyncio.Event().wait()
         
-        # Set bot commands and notify owner
-        try:
-            print("📝 Setting bot commands...")
-            await reset_and_set_commands()
-            print("✅ Commands set successfully")
-        except Exception as e:
-            print(f"⚠️ Warning: Could not set commands: {e}")
-        
-        try:
-            print("📢 Notifying owner...")
-            await notify_owner()
-            print("✅ Owner notified")
-        except Exception as e:
-            print(f"⚠️ Warning: Could not notify owner: {e}")
-        
-        print("🎉 All services started successfully!")
-        print("🔄 Bot is now running and waiting for messages...")
+        # Run in new event loop
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
+        loop.run_until_complete(run_server())
     
-    # Register startup handler
-    @bot.on_start()
-    async def on_bot_start(client, message=None):
-        await setup_bot()
+    # Start web server in background thread
+    web_thread = threading.Thread(target=start_web_server_sync, daemon=True)
+    web_thread.start()
     
-    # Run the bot normally (pyromod needs this)
+    print("🎉 Web server starting in background...")
+    print("🚀 Starting Telegram bot...")
+    
+    # Run the bot (pyromod needs this simple pattern)
     bot.run()
