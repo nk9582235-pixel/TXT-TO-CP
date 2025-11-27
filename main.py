@@ -1214,6 +1214,21 @@ async def txt_handler(bot: Client, m: Message):
                 else:
                     cmd = f'yt-dlp -f "{ytf}" "{url}" -o "{name}.mp4"'
 
+                # Define resolution for captions
+                if raw_text2 == "144":
+                    res = "256x144"
+                elif raw_text2 == "240":
+                    res = "426x240"
+                elif raw_text2 == "360":
+                    res = "640x360"
+                elif raw_text2 == "480":
+                    res = "854x480"
+                elif raw_text2 == "720":
+                    res = "1280x720"
+                elif raw_text2 == "1080":
+                    res = "1920x1080" 
+                else:
+                    res = "UN"
 
                 cc = f'[🎥]Vid Id : {str(count).zfill(3)}\n**Video Title :** `{name1} [{res}p].mkv`\n<blockquote><b>Batch Name :</b> {b_name}</blockquote>\n\n**Extracted by➤**{CR}\n'
                 cc1 = f'[📕]Pdf Id : {str(count).zfill(3)}\n**File Title :** `{name1}.pdf`\n<blockquote><b>Batch Name :</b> {b_name}</blockquote>\n\n**Extracted by➤**{CR}\n'
