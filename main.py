@@ -84,8 +84,7 @@ async def start_handler(client: Client, message: Message):
     await message.reply_text(
         f"👋 Hello {message.from_user.mention}!\n\n"
         "I am a **TXT Extractor Bot**. I can help you download videos from text files.\n\n"
-        "Use /help to see available commands.",
-        reply_markup=keyboard
+        "Use /help to see available commands."
     )
 
 @bot.on_message(filters.command("addauth") & filters.private)
