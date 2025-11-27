@@ -1,7 +1,9 @@
-api_id = 35814071 #change_with_your_Api_id.
-api_hash = "80c231f0e8704995b8259d06965n4351" #change_with_your_Api_hash.
-bot_token = "7198600769:AAHfVi7qTaMw20HbpvPrF-fnP77-sWdOthI" #change_with_your_bot_token.
-auth_users = [999741495] #change_with_your_user_id.
-sudo_user = 1713924419 #change_with_your_user_id.
-log_channel = -1002154281532 #change_with_your_channel_id.
-txt_channel = -1002154281532 #change_with_your_channel_id.
+API_ID = 22984163  # Change with your Api_id
+API_HASH = "18c3760d602be96b599fa42f1c322956"  # Change with your Api_hash
+BOT_TOKEN = "8348577322:AAHOpd-XLXdVpBl3eC_d6iKyt_nNQ6sDXaQ"  # Change with your bot_token
+AUTH_USERS = [915101089]  # Authorized user ID
+OWNER = 915101089  # Owner user ID
+CREDIT = "NT Bots"  # Bot credit name
+LOG_CHANNEL = -1003372979311  # Log channel ID
+TXT_CHANNEL = -1003372979311  # Text channel ID
+TOTAL_USERS = []  # Will be populated dynamically

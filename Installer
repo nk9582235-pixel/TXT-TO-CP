@@ -16,8 +16,11 @@ urllib3==2.0.3
 websockets==11.0.3
 yt-dlp==2023.6.22
 motor
-aiohttp==3.8.4
+aiohttp==3.9.0
 aiofiles
 pytz
 umongo==3.1.0
 speedtest-cli
+m3u8
+cloudscraper
+beautifulsoup4
