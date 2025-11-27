@@ -1767,38 +1767,26 @@ async def reset_and_set_commands():
 
 
 if __name__ == "__main__":
-    import threading
-    
-    def start_web_server_sync():
-        """Start web server in separate thread"""
+    # Start web server synchronously before bot
+    async def start_web_and_bot():
+        # Health check endpoint
         async def health_check(request):
             return web.Response(text="Bot is running!")
         
-        async def run_server():
-            app = web.Application()
-            app.router.add_get('/', health_check)
-            
-            runner = web.AppRunner(app)
-            await runner.setup()
-            port = int(os.getenv('PORT', 10000))
-            site = web.TCPSite(runner, '0.0.0.0', port)
-            await site.start()
-            print(f"✅ Web server started on port {port}")
-            
-            # Keep server running
-            await asyncio.Event().wait()
-        
-        # Run in new event loop
-        loop = asyncio.new_event_loop()
-        asyncio.set_event_loop(loop)
-        loop.run_until_complete(run_server())
+        # Start web server
+        app = web.Application()
+        app.router.add_get('/', health_check)
+        runner = web.AppRunner(app)
+        await runner.setup()
+        port = int(os.getenv('PORT', 10000))
+        site = web.TCPSite(runner, '0.0.0.0', port)
+        await site.start()
+        print(f"✅ Web server started on port {port}")
     
-    # Start web server in background thread
-    web_thread = threading.Thread(target=start_web_server_sync, daemon=True)
-    web_thread.start()
+    # Run web server setup before starting bot
+    asyncio.get_event_loop().run_until_complete(start_web_and_bot())
     
-    print("🎉 Web server starting in background...")
     print("🚀 Starting Telegram bot...")
     
-    # Run the bot (pyromod needs this simple pattern)
+    # Run the bot (simplest pattern for pyromod)
     bot.run()
