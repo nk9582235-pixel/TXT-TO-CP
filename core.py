@@ -6,7 +6,6 @@ import aiofiles
 import asyncio
 import logging
 import requests
-import tgcrypto
 import subprocess
 import concurrent.futures
 
@@ -137,6 +136,7 @@ def old_download(url, file_name, chunk_size = 1024 * 10):
 
 
 def human_readable_size(size, decimal_places=2):
+    unit = 'B'
     for unit in ['B', 'KB', 'MB', 'GB', 'TB', 'PB']:
         if size < 1024.0 or unit == 'PB':
             break
@@ -154,6 +154,7 @@ def time_name():
 async def download_video(url,cmd, name):
     download_cmd = f'{cmd} -R 25 --external-downloader aria2c --downloader-args "aria2c: -x 32 -j 64 -s 32 -k 2M --optimize-concurrent-downloads"'
     global failed_counter
+    failed_counter = 0
     print(download_cmd)
     logging.info(download_cmd)
     k = subprocess.run(download_cmd, shell=True)
@@ -177,7 +178,7 @@ async def download_video(url,cmd, name):
 
         return name
     except FileNotFoundError as exc:
-        return os.path.isfile.splitext[0] + "." + "mp4"
+        return os.path.splitext(name)[0] + "." + "mp4"
 
 
 async def send_doc(bot: Client, m: Message,cc,ka,cc1,prog,count,name):
@@ -196,6 +197,7 @@ async def send_vid(bot: Client, m: Message,cc,filename,thumb,name,prog):
     subprocess.run(f'ffmpeg -i "{filename}" -ss 00:01:00 -vframes 1 "{filename}.jpg"', shell=True)
     await prog.delete (True)
     reply = await m.reply_text(f"**⥣ Uploading ...** » `{name}`")
+    thumbnail = None
     try:
         if thumb == "no":
             thumbnail = f"{filename}.jpg"
@@ -203,13 +205,17 @@ async def send_vid(bot: Client, m: Message,cc,filename,thumb,name,prog):
             thumbnail = thumb
     except Exception as e:
         await m.reply_text(str(e))
+        thumbnail = None
 
     dur = int(duration(filename))
 
     start_time = time.time()
 
     try:
-        await m.reply_video(filename,caption=cc, supports_streaming=True,height=720,width=1280,thumb=thumbnail,duration=dur, progress=progress_bar,progress_args=(reply,start_time))
+        if thumbnail and os.path.exists(thumbnail):
+            await m.reply_video(filename,caption=cc, supports_streaming=True,height=720,width=1280,thumb=thumbnail,duration=dur, progress=progress_bar,progress_args=(reply,start_time))
+        else:
+            await m.reply_video(filename,caption=cc, supports_streaming=True,height=720,width=1280,duration=dur, progress=progress_bar,progress_args=(reply,start_time))
     except Exception:
         await m.reply_document(filename,caption=cc, progress=progress_bar,progress_args=(reply,start_time))
     os.remove(filename)
