@@ -1257,6 +1257,24 @@ async def txt_handler(bot: Client, m: Message):
                    # Add robust headers for media-cdn URLs to bypass 403 Forbidden
                    # Mimic a browser request from the web app
                    ua = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+                   
+                   # DEBUG: Check URL with requests first to see WHY it is 403
+                   try:
+                       debug_headers = {
+                           "User-Agent": ua,
+                           "Referer": "https://web.classplusapp.com/",
+                           "Origin": "https://web.classplusapp.com",
+                           "x-cdn-tag": "empty"
+                       }
+                       print(f"[DEBUG] Checking URL: {url}")
+                       debug_req = requests.get(url, headers=debug_headers, stream=True)
+                       print(f"[DEBUG] Status: {debug_req.status_code}")
+                       if debug_req.status_code != 200:
+                           print(f"[DEBUG] Response Headers: {debug_req.headers}")
+                           print(f"[DEBUG] Response Body: {debug_req.text[:500]}")
+                   except Exception as e:
+                       print(f"[DEBUG] Request check failed: {e}")
+
                    cmd = f'yt-dlp --user-agent "{ua}" --referer "https://web.classplusapp.com/" --add-header "origin:https://web.classplusapp.com" --add-header "x-cdn-tag:empty" -f "{ytf}" "{url}" -o "{name}.mp4"'
                 elif "youtube.com" in url or "youtu.be" in url:
                     cmd = f'yt-dlp --cookies youtube_cookies.txt -f "{ytf}" "{url}" -o "{name}".mp4'
