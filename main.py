@@ -1254,8 +1254,10 @@ async def txt_handler(bot: Client, m: Message):
                 elif "webvideos.classplusapp." in url:
                    cmd = f'yt-dlp --add-header "referer:https://web.classplusapp.com/" --add-header "x-cdn-tag:empty" -f "{ytf}" "{url}" -o "{name}.mp4"'
                 elif "media-cdn.classplusapp.com" in url or "media-cdn-alisg.classplusapp.com" in url or "media-cdn-a.classplusapp.com" in url:
-                   # Add required headers for media-cdn URLs to bypass 403 Forbidden
-                   cmd = f'yt-dlp --add-header "referer:https://web.classplusapp.com/" --add-header "x-cdn-tag:empty" -f "{ytf}" "{url}" -o "{name}.mp4"'
+                   # Add robust headers for media-cdn URLs to bypass 403 Forbidden
+                   # Mimic a browser request from the web app
+                   ua = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+                   cmd = f'yt-dlp --user-agent "{ua}" --referer "https://web.classplusapp.com/" --add-header "origin:https://web.classplusapp.com" --add-header "x-cdn-tag:empty" -f "{ytf}" "{url}" -o "{name}.mp4"'
                 elif "youtube.com" in url or "youtu.be" in url:
                     cmd = f'yt-dlp --cookies youtube_cookies.txt -f "{ytf}" "{url}" -o "{name}".mp4'
                 else:
