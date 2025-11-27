@@ -1121,6 +1121,13 @@ async def txt_handler(bot: Client, m: Message):
     count =int(raw_text)    
     arg = int(raw_text)
     for i in range(arg-1, len(links)):
+            # Check if user requested cancellation
+            if cancel_requested:
+                await m.reply_text("🚦**STOPPED**🚦")
+                processing_request = False
+                cancel_requested = False
+                return
+            
             try:
                 Vxy = links[i][1].replace("file/d/","uc?export=download&id=").replace("www.youtube-nocookie.com/embed", "youtu.be").replace("?modestbranding=1", "").replace("/view?usp=sharing","")
                 url = "https://" + Vxy
