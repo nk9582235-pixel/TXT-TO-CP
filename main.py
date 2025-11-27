@@ -1214,103 +1214,104 @@ async def txt_handler(bot: Client, m: Message):
                 else:
                     cmd = f'yt-dlp -f "{ytf}" "{url}" -o "{name}.mp4"'
 
-                try:
-                    cc = f'[🎥]Vid Id : {str(count).zfill(3)}\n**Video Title :** `{name1} [{res}p].mkv`\n<blockquote><b>Batch Name :</b> {b_name}</blockquote>\n\n**Extracted by➤**{CR}\n'
-                    cc1 = f'[📕]Pdf Id : {str(count).zfill(3)}\n**File Title :** `{name1}.pdf`\n<blockquote><b>Batch Name :</b> {b_name}</blockquote>\n\n**Extracted by➤**{CR}\n'
-                    cczip = f'[📁]Zip Id : {str(count).zfill(3)}\n**Zip Title :** `{name1}.zip`\n<blockquote><b>Batch Name :</b> {b_name}</blockquote>\n\n**Extracted by➤**{CR}\n' 
-                    ccimg = f'[🖼️]Img Id : {str(count).zfill(3)}\n**Img Title :** `{name1}.jpg`\n<blockquote><b>Batch Name :</b> {b_name}</blockquote>\n\n**Extracted by➤**{CR}\n'
-                    ccm = f'[🎵]Audio Id : {str(count).zfill(3)}\n**Audio Title :** `{name1}.mp3`\n<blockquote><b>Batch Name :</b> {b_name}</blockquote>\n\n**Extracted by➤**{CR}\n'
-                    cchtml = f'[🌐]Html Id : {str(count).zfill(3)}\n**Html Title :** `{name1}.html`\n<blockquote><b>Batch Name :</b> {b_name}</blockquote>\n\n**Extracted by➤**{CR}\n'
-                      
-                    if "drive" in url:
+
+                cc = f'[🎥]Vid Id : {str(count).zfill(3)}\n**Video Title :** `{name1} [{res}p].mkv`\n<blockquote><b>Batch Name :</b> {b_name}</blockquote>\n\n**Extracted by➤**{CR}\n'
+                cc1 = f'[📕]Pdf Id : {str(count).zfill(3)}\n**File Title :** `{name1}.pdf`\n<blockquote><b>Batch Name :</b> {b_name}</blockquote>\n\n**Extracted by➤**{CR}\n'
+                cczip = f'[📁]Zip Id : {str(count).zfill(3)}\n**Zip Title :** `{name1}.zip`\n<blockquote><b>Batch Name :</b> {b_name}</blockquote>\n\n**Extracted by➤**{CR}\n' 
+                ccimg = f'[🖼️]Img Id : {str(count).zfill(3)}\n**Img Title :** `{name1}.jpg`\n<blockquote><b>Batch Name :</b> {b_name}</blockquote>\n\n**Extracted by➤**{CR}\n'
+                ccm = f'[🎵]Audio Id : {str(count).zfill(3)}\n**Audio Title :** `{name1}.mp3`\n<blockquote><b>Batch Name :</b> {b_name}</blockquote>\n\n**Extracted by➤**{CR}\n'
+                cchtml = f'[🌐]Html Id : {str(count).zfill(3)}\n**Html Title :** `{name1}.html`\n<blockquote><b>Batch Name :</b> {b_name}</blockquote>\n\n**Extracted by➤**{CR}\n'
+                  
+                if "drive" in url:
+                    try:
+                        ka = await helper.download(url, name)
                         try:
-                            ka = await helper.download(url, name)
+                            copy = await bot.send_document(chat_id=channel_id,document=ka, caption=cc1)
+                        except Exception as send_error:
+                            await m.reply_text(f"**Failed to send document to channel. Error: {str(send_error)}**")
+                            continue
+                        count+=1
+                        os.remove(ka)
+                    except FloodWait as e:
+                        await m.reply_text(str(e))
+                        time.sleep(e.x)
+                        continue    
+
+                elif ".pdf" in url:
+                    if "cwmediabkt99" in url:
+                        max_retries = 15  # Define the maximum number of retries
+                        retry_delay = 4  # Delay between retries in seconds
+                        success = False  # To track whether the download was successful
+                        failure_msgs = []  # To keep track of failure messages
+                        
+                        for attempt in range(max_retries):
                             try:
-                                copy = await bot.send_document(chat_id=channel_id,document=ka, caption=cc1)
+                                await asyncio.sleep(retry_delay)
+                                url = url.replace(" ", "%20")
+                                scraper = cloudscraper.create_scraper()
+                                response = scraper.get(url)
+
+                                if response.status_code == 200:
+                                    with open(f'{name}.pdf', 'wb') as file:
+                                        file.write(response.content)
+                                    await asyncio.sleep(retry_delay)  # Optional, to prevent spamming
+                                    try:
+                                        copy = await bot.send_document(chat_id=channel_id, document=f'{name}.pdf', caption=cc1)
+                                    except Exception as send_error:
+                                        await m.reply_text(f"**Failed to send PDF to channel. Error: {str(send_error)}**")
+                                        os.remove(f'{name}.pdf')
+                                        continue
+                                    count += 1
+                                    os.remove(f'{name}.pdf')
+                                    success = True
+                                    break  # Exit the retry loop if successful
+                                else:
+                                    failure_msg = await m.reply_text(f"Attempt {attempt + 1}/{max_retries} failed: {response.status_code} {response.reason}")
+                                    failure_msgs.append(failure_msg)
+                                    
+                            except Exception as e:
+                                failure_msg = await m.reply_text(f"Attempt {attempt + 1}/{max_retries} failed: {str(e)}")
+                                failure_msgs.append(failure_msg)
+                                await asyncio.sleep(retry_delay)
+                                continue 
+                        for msg in failure_msgs:
+                            await msg.delete()
+                            
+                    else:
+                        try:
+                            cmd = f'yt-dlp -o "{name}.pdf" "{url}"'
+                            download_cmd = f"{cmd} -R 25 --fragment-retries 25"
+                            os.system(download_cmd)
+                            try:
+                                copy = await bot.send_document(chat_id=channel_id, document=f'{name}.pdf', caption=cc1)
                             except Exception as send_error:
-                                await m.reply_text(f"**Failed to send document to channel. Error: {str(send_error)}**")
+                                await m.reply_text(f"**Failed to send PDF to channel. Error: {str(send_error)}**")
+                                os.remove(f'{name}.pdf')
                                 continue
-                            count+=1
-                            os.remove(ka)
+                            count += 1
+                            os.remove(f'{name}.pdf')
                         except FloodWait as e:
                             await m.reply_text(str(e))
                             time.sleep(e.x)
                             continue    
 
-                    elif ".pdf" in url:
-                        if "cwmediabkt99" in url:
-                            max_retries = 15  # Define the maximum number of retries
-                            retry_delay = 4  # Delay between retries in seconds
-                            success = False  # To track whether the download was successful
-                            failure_msgs = []  # To keep track of failure messages
-                            
-                            for attempt in range(max_retries):
-                                try:
-                                    await asyncio.sleep(retry_delay)
-                                    url = url.replace(" ", "%20")
-                                    scraper = cloudscraper.create_scraper()
-                                    response = scraper.get(url)
-
-                                    if response.status_code == 200:
-                                        with open(f'{name}.pdf', 'wb') as file:
-                                            file.write(response.content)
-                                        await asyncio.sleep(retry_delay)  # Optional, to prevent spamming
-                                        try:
-                                            copy = await bot.send_document(chat_id=channel_id, document=f'{name}.pdf', caption=cc1)
-                                        except Exception as send_error:
-                                            await m.reply_text(f"**Failed to send PDF to channel. Error: {str(send_error)}**")
-                                            os.remove(f'{name}.pdf')
-                                            continue
-                                        count += 1
-                                        os.remove(f'{name}.pdf')
-                                        success = True
-                                        break  # Exit the retry loop if successful
-                                    else:
-                                        failure_msg = await m.reply_text(f"Attempt {attempt + 1}/{max_retries} failed: {response.status_code} {response.reason}")
-                                        failure_msgs.append(failure_msg)
-                                        
-                                except Exception as e:
-                                    failure_msg = await m.reply_text(f"Attempt {attempt + 1}/{max_retries} failed: {str(e)}")
-                                    failure_msgs.append(failure_msg)
-                                    await asyncio.sleep(retry_delay)
-                                    continue 
-                            for msg in failure_msgs:
-                                await msg.delete()
-                                
-                        else:
-                            try:
-                                cmd = f'yt-dlp -o "{name}.pdf" "{url}"'
-                                download_cmd = f"{cmd} -R 25 --fragment-retries 25"
-                                os.system(download_cmd)
-                                try:
-                                    copy = await bot.send_document(chat_id=channel_id, document=f'{name}.pdf', caption=cc1)
-                                except Exception as send_error:
-                                    await m.reply_text(f"**Failed to send PDF to channel. Error: {str(send_error)}**")
-                                    os.remove(f'{name}.pdf')
-                                    continue
-                                count += 1
-                                os.remove(f'{name}.pdf')
-                            except FloodWait as e:
-                                await m.reply_text(str(e))
-                                time.sleep(e.x)
-                                continue    
-
-                    elif ".ws" in url and  url.endswith(".ws"):
+                elif ".ws" in url and  url.endswith(".ws"):
+                    try:
+                        await helper.pdf_download(f"{api_url}utkash-ws?url={url}&authorization={api_token}",f"{name}.html")
+                        time.sleep(1)
                         try:
-                            await helper.pdf_download(f"{api_url}utkash-ws?url={url}&authorization={api_token}",f"{name}.html")
-                            time.sleep(1)
-                            try:
-                                await bot.send_document(chat_id=channel_id, document=f"{name}.html", caption=cchtml)
-                            except Exception as send_error:
-                                await m.reply_text(f"**Failed to send HTML to channel. Error: {str(send_error)}**")
-                                os.remove(f'{name}.html')
-                                continue
+                            await bot.send_document(chat_id=channel_id, document=f"{name}.html", caption=cchtml)
+                        except Exception as send_error:
+                            await m.reply_text(f"**Failed to send HTML to channel. Error: {str(send_error)}**")
                             os.remove(f'{name}.html')
-                            count += 1
-                        except FloodWait as e:
-                            await m.reply_text(str(e))
-                            time.sleep(e.x)
                             continue
+                        os.remove(f'{name}.html')
+                        count += 1
+                    except FloodWait as e:
+                        await m.reply_text(str(e))
+                        time.sleep(e.x)
+                        continue
+                elif any(ext in url for ext in [".jpg", ".jpeg", ".png"]):
                     try:
                         ext = url.split('.')[-1]
                         cmd = f'yt-dlp -o "{name}.{ext}" "{url}"'
@@ -1328,7 +1329,7 @@ async def txt_handler(bot: Client, m: Message):
                         await m.reply_text(str(e))
                         time.sleep(e.x)
                         continue    
-
+    
                 elif any(ext in url for ext in [".mp3", ".wav", ".m4a"]):
                     try:
                         ext = url.split('.')[-1]
@@ -1347,7 +1348,7 @@ async def txt_handler(bot: Client, m: Message):
                         await m.reply_text(str(e))
                         time.sleep(e.x)
                         continue    
-
+    
                 elif 'encrypted.m' in url:    
                     remaining_links = len(links) - count
                     progress = (count / len(links)) * 100
@@ -1385,7 +1386,7 @@ async def txt_handler(bot: Client, m: Message):
                     count += 1  
                     await asyncio.sleep(1)  
                     continue  
-
+    
                 elif 'drmcdni' in url or 'drm/wv' in url:
                     remaining_links = len(links) - count
                     progress = (count / len(links)) * 100
@@ -1423,7 +1424,7 @@ async def txt_handler(bot: Client, m: Message):
                     count += 1
                     await asyncio.sleep(1)
                     continue
-
+    
                 else:
                     remaining_links = len(links) - count
                     progress = (count / len(links)) * 100
