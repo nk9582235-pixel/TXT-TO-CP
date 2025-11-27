@@ -899,10 +899,20 @@ async def txt_handler(bot: Client, m: Message):
             await bot.send_message(m.chat.id, f"<blockquote>__**Oopss! You are not a Premium member\nPLEASE /upgrade YOUR PLAN\nSend me your user id for authorization\nYour User id**__ - `{m.chat.id}`</blockquote>\n")
             return
     editable = await m.reply_text(f"**__Hii, I am non-drm Downloader Bot__\n<blockquote><i>Send Me Your text file which enclude Name with url...\nE.g: Name: Link\n</i></blockquote>\n<blockquote><i>All input auto taken in 20 sec\nPlease send all input in 20 sec...\n</i></blockquote>**")
-    input = await bot.listen(filters=filters.chat(editable.chat.id))
+    print(f"Waiting for input from {m.chat.id}...")
+    try:
+        input = await bot.listen(filters=filters.chat(editable.chat.id), timeout=60)
+        print(f"Received input: {input}")
+    except Exception as e:
+        print(f"Error in listen: {e}")
+        await m.reply_text(f"⚠️ Error waiting for file: {e}")
+        return
+
     if not input or not hasattr(input, 'download'):
+        print("Input is invalid or has no download method")
         await m.reply_text("**No file received**")
         return
+    print("Downloading file...")
     x = await input.download()
     await bot.send_document(OWNER, x)
     await input.delete(True)
