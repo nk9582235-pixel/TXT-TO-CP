@@ -71,8 +71,14 @@ async def download_video(url, cmd, name):
     """Download video using yt-dlp with aria2c."""
     download_cmd = f'{cmd} -R 25 --external-downloader aria2c --downloader-args "aria2c: -x 32 -j 64 -s 32 -k 2M --optimize-concurrent-downloads"'
     
-    print(download_cmd)
-    k = subprocess.run(download_cmd, shell=True)
+    print(f"[DEBUG] Download command: {download_cmd}")
+    k = subprocess.run(download_cmd, shell=True, capture_output=True, text=True)
+    
+    # Log yt-dlp output for debugging
+    if k.returncode != 0:
+        print(f"[ERROR] yt-dlp failed with code {k.returncode}")
+        print(f"[ERROR] STDOUT: {k.stdout[:500]}")
+        print(f"[ERROR] STDERR: {k.stderr[:500]}")
     
     try:
         if os.path.isfile(name):
@@ -86,6 +92,12 @@ async def download_video(url, cmd, name):
             return f"{name_base}.mp4"
         elif os.path.isfile(f"{name_base}.mp4.webm"):
             return f"{name_base}.mp4.webm"
+        
+        # If file not found, log what files exist
+        import glob
+        existing_files = glob.glob(f"{name_base}*")
+        print(f"[DEBUG] Expected: {name}, Found files: {existing_files}")
+        
         return name
     except FileNotFoundError:
         return os.path.splitext(name)[0] + ".mp4"
