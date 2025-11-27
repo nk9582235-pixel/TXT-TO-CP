@@ -1003,7 +1003,7 @@ async def txt_handler(bot: Client, m: Message):
         raw_text2 = input2.text
         await input2.delete(True)
     except asyncio.TimeoutError:
-        raw_text2 = '480'
+        raw_text2 = '1080'  # Default to high quality (1080p)
     quality = f"{raw_text2}p"
     try:
         if raw_text2 == "144":
