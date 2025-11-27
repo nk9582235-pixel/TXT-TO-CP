@@ -1120,8 +1120,7 @@ async def txt_handler(bot: Client, m: Message):
     failed_count = 0
     count =int(raw_text)    
     arg = int(raw_text)
-    try:
-        for i in range(arg-1, len(links)):
+    for i in range(arg-1, len(links)):
             try:
                 Vxy = links[i][1].replace("file/d/","uc?export=download&id=").replace("www.youtube-nocookie.com/embed", "youtu.be").replace("?modestbranding=1", "").replace("/view?usp=sharing","")
                 url = "https://" + Vxy
@@ -1489,10 +1488,6 @@ async def txt_handler(bot: Client, m: Message):
                 count += 1
                 failed_count += 1
                 continue
-
-    except Exception as e:
-        await m.reply_text(e)
-        time.sleep(2)
 
     success_count = len(links) - failed_count
     video_count = v2_count + mpd_count + m3u8_count + yt_count + drm_count + zip_count + other_count
